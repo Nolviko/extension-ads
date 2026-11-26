@@ -1,0 +1,38 @@
+{
+  "id": "nolviko/ads",
+  "name": "Ads",
+  "version": "1.0.0",
+  "api": 1,
+  "engine": "^1.4",
+  "php": "~8.2.35 || ~8.3.36 || ~8.4.27 || ~8.5.12",
+  "license": "Apache-2.0",
+  "providers": [
+    "src/Provider.php"
+  ],
+  "permissions": [
+    "nolviko.ads.view",
+    "nolviko.ads.hide",
+    "nolviko.ads.manage"
+  ],
+  "routes": [
+    "nolviko.ads.click",
+    "nolviko.ads.admin"
+  ],
+  "migrations": [
+    "0001_tables"
+  ],
+  "ui_slots": [
+    "layout.head",
+    "layout.content.before",
+    "layout.content.after",
+    "forum.row.after",
+    "forum.thread.after",
+    "thread.post.after",
+    "thread.posts.after"
+  ],
+  "translations": [
+    "en",
+    "tr"
+  ],
+  "repository": "Nolviko/extension-ads"
+}

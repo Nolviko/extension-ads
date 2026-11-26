@@ -1,0 +1,9 @@
+{
+  "tables": {
+    "clicks": {
+      "ad": "string",
+      "day": "integer",
+      "clicks": "bigint"
+    }
+  }
+}
