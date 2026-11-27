@@ -74,6 +74,39 @@ final class AdsTest extends TestCase
         self::assertStringContainsString('<strong>B</strong>', $last);
     }
 
+    public function testGroupRulesAndASafePreview(): void
+    {
+        $ad = AdsConfig::cleanAd(['name' => 'G', 'position' => 'below_menu', 'type' => 'text', 'title' => 'Hi',
+            'groups_mode' => 'except', 'groups' => ['7', 7, -1, 'x']]);
+        $config = ['ads' => [$ad], 'excluded' => []];
+
+        self::assertSame([7], $ad['groups']);
+        self::assertTrue(AdsRenderer::groupAllows($ad, [2]));
+        self::assertFalse(AdsRenderer::groupAllows($ad, [2, 7]));
+        self::assertTrue(AdsRenderer::groupAllows(['groups_mode' => 'only'] + $ad, [7]));
+        self::assertFalse(AdsRenderer::groupAllows(['groups_mode' => 'only'] + $ad, [1]));
+        $hidden = AdsRenderer::render(
+            $config,
+            'layout.content.before',
+            [],
+            'member',
+            '/',
+            'N',
+            '2026-11-26',
+            'Ad',
+            static fn(): string => '#',
+            static fn(): float => 0.5,
+            [2, 7],
+        );
+        self::assertSame('', $hidden->html);
+
+        $code = AdsConfig::cleanAd(['type' => 'code', 'code' => '<script>alert(1)</script>']);
+        $preview = AdsRenderer::preview($code, 'Ad', 'Not run');
+        self::assertStringNotContainsString('<script>', $preview);
+        self::assertStringContainsString('&lt;script&gt;alert(1)&lt;/script&gt;', $preview);
+        self::assertStringContainsString('nv-prev-phone', $preview);
+    }
+
     public function testCleaningRefusesUnsafeValues(): void
     {
         $ad = AdsConfig::cleanAd(['image' => 'javascript:alert(1)', 'link' => 'https://ok.test/a b', 'after' => 999,

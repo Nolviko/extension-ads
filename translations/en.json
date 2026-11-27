@@ -69,5 +69,14 @@
   "nolviko.ads.hosts_help": "Addresses like https://ads.example.com or https://*.example.net that your ad code loads from.",
   "nolviko.ads.field_excluded": "No ads on these pages (address beginnings, one per line)",
   "nolviko.ads.excluded_help": "Sign-in, registration, account, private messages and the admin area never show ads (AdSense does not allow ads on pages without content).",
-  "nolviko.ads.hide_help": "To hide ads for a group, give it the permission \"nolviko.ads.hide\" in Admin > User groups."
+  "nolviko.ads.hide_help": "To hide ads for a group, give it the permission \"nolviko.ads.hide\" in Admin > User groups.",
+  "nolviko.ads.field_groups": "Groups",
+  "nolviko.ads.field_groups_mode": "Show to",
+  "nolviko.ads.groups_mode_all": "every group",
+  "nolviko.ads.groups_mode_only": "only the ticked groups",
+  "nolviko.ads.groups_mode_except": "every group except the ticked ones",
+  "nolviko.ads.groups_help": "Guests are in the Guests group. The audience and device settings above still apply, and a group with the permission \"Hide ads\" never sees ads.",
+  "nolviko.ads.preview": "Preview",
+  "nolviko.ads.preview_help": "How the ad looks on a phone and on a computer. Save first to see your changes.",
+  "nolviko.ads.preview_code": "Ad code is not run in the admin panel. This is the code that will be placed here:"
 }

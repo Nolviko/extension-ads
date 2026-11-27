@@ -121,6 +121,7 @@ return new class implements ExtensionProvider {
                 Session $session,
                 Connection $db,
                 ErrorResponder $errors,
+                CspNonce $nonce,
             ): AdminHandler => new AdminHandler(
                 $translator,
                 $views,
@@ -134,10 +135,12 @@ return new class implements ExtensionProvider {
                 static fn(): AdsConfig => AdsConfig::load($directory),
                 static fn(): Connection => $db,
                 $clicks,
+                $nonce,
             ),
             [
                 MessageTranslator::class, TemplateRenderer::class, RequestSubject::class, AdminSession::class,
                 CsrfTokens::class, Router::class, Session::class, Connection::class, ErrorResponder::class,
+                CspNonce::class,
             ],
         );
         $context->adminPage(AdminHandler::ROUTE);

@@ -32,6 +32,9 @@ final class AdsConfig
 
     public const DEVICES = ['all', 'mobile', 'desktop'];
 
+    /** 1.1.0: every group, only the chosen groups, or every group except the chosen ones. */
+    public const GROUP_MODES = ['all', 'only', 'except'];
+
     /** Google AdSense / Ad Manager hosts (Google's CSP guidance), added when the AdSense option is on. */
     public const ADSENSE_HOSTS = [
         'script-src' => ['https://pagead2.googlesyndication.com', 'https://*.googlesyndication.com',
@@ -134,6 +137,11 @@ final class AdsConfig
             'start' => $date('start'),
             'end' => $date('end'),
             'weight' => max(1, min(10, (int) ($ad['weight'] ?? 1))),
+            'groups_mode' => $choice('groups_mode', self::GROUP_MODES),
+            'groups' => array_slice(array_values(array_unique(array_filter(
+                array_map('intval', is_array($ad['groups'] ?? null) ? $ad['groups'] : []),
+                static fn(int $group): bool => $group > 0 && $group < 1000000000,
+            ))), 0, 50),
         ];
     }
 

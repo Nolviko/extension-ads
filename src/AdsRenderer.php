@@ -31,6 +31,7 @@ final class AdsRenderer
      * @param array<string, mixed> $context The slot context (`position` for list slots).
      * @param callable(string): string $clickUrl Ad ID => click address.
      * @param callable(): float $random 0..1, for weighted rotation.
+     * @param list<int> $groups The viewer's groups (1.1.0; guests are in the Guests group).
      */
     public static function render(
         array $config,
@@ -43,6 +44,7 @@ final class AdsRenderer
         string $label,
         callable $clickUrl,
         callable $random,
+        array $groups = [],
     ): SafeHtml {
         if ($viewer === 'hidden' || self::excluded($path, $config['excluded'] ?? [])) {
             return new SafeHtml('');
@@ -56,6 +58,7 @@ final class AdsRenderer
                 || ($ad['end'] !== '' && $today > $ad['end'])
                 || ($ad['audience'] === 'guests' && $viewer !== 'guest')
                 || ($ad['audience'] === 'members' && $viewer !== 'member')
+                || !self::groupAllows($ad, $groups)
                 || ($counted && ($position === null || ($ad['repeat'] ? $position % $ad['after'] !== 0
                     : $position !== $ad['after'])))
             ) {
@@ -128,10 +131,61 @@ final class AdsRenderer
             $translator->translate('nolviko.ads.label'),
             static fn(string $id): string => $router->generate('nolviko.ads.click', ['ad' => $id]),
             static fn(): float => mt_rand() / mt_getrandmax(),
+            $subject->groupIds,
         );
 
         return $slot === 'layout.head' && $viewer !== 'hidden'
             ? new SafeHtml(self::style($nonce->value)->html . $ad->html) : $ad;
+    }
+
+    /** @param array<string, mixed> $ad @param list<int> $groups */
+    public static function groupAllows(array $ad, array $groups): bool
+    {
+        $chosen = array_intersect($ad['groups'] ?? [], $groups) !== [];
+
+        return match ($ad['groups_mode'] ?? 'all') {
+            'only' => $chosen,
+            'except' => !$chosen,
+            default => true,
+        };
+    }
+
+    /**
+     * The admin preview of one ad (1.1.0): image and text ads as visitors see them, in a phone-wide and a
+     * desktop-wide frame; code ads are shown as text and never run in the administrator's session.
+     *
+     * @param array<string, mixed> $ad
+     */
+    public static function preview(array $ad, string $label, string $codeNote): string
+    {
+        $inner = match ($ad['type']) {
+            'image' => $ad['image'] === '' ? '' : '<a href="#" rel="sponsored"><img src="' . self::e($ad['image'])
+                . '" alt="' . self::e($ad['alt']) . '"></a>',
+            'text' => '<a class="nv-ad-text" href="#" rel="sponsored"><strong>' . self::e($ad['title'])
+                . '</strong>' . ($ad['body'] === '' ? '' : '<span>' . self::e($ad['body']) . '</span>') . '</a>',
+            default => '<div class="nv-prev-code"><p>' . self::e($codeNote) . '</p><pre><code>'
+                . self::e(mb_substr($ad['code'], 0, 4000)) . '</code></pre></div>',
+        };
+        $ad = '<div class="nv-ad"><span class="nv-ad-label">' . self::e($label) . '</span>' . $inner . '</div>';
+
+        return '<div class="nv-prev"><div class="nv-prev-frame nv-prev-phone"><span class="nv-prev-line"></span>'
+            . $ad . '<span class="nv-prev-line"></span></div><div class="nv-prev-frame nv-prev-desktop">'
+            . '<span class="nv-prev-line"></span>' . $ad . '<span class="nv-prev-line"></span></div></div>';
+    }
+
+    /** The preview frames' stylesheet, with the admin page's nonce. */
+    public static function previewStyle(string $nonce): string
+    {
+        return '<style nonce="' . self::e($nonce) . '">.nv-prev{display:flex;flex-wrap:wrap;gap:16px;'
+            . 'align-items:flex-start}.nv-prev-frame{border:1px solid var(--line,#ddd);border-radius:12px;padding:12px;'
+            . 'background:var(--surface,#fff);overflow:hidden}.nv-prev-phone{width:360px;max-width:100%}'
+            . '.nv-prev-desktop{flex:1 1 480px;min-width:0}.nv-prev-line{display:block;height:10px;margin:8px 0;'
+            . 'border-radius:5px;background:var(--line,#e5e5e5)}.nv-prev .nv-ad{margin:10px auto;text-align:center}'
+            . '.nv-prev img{max-width:100%;height:auto}.nv-prev .nv-ad-label{display:block;font-size:11px;'
+            . 'text-transform:uppercase;opacity:.6}.nv-prev .nv-ad-text{display:inline-flex;flex-direction:column;'
+            . 'padding:10px 14px;border:1px solid var(--line,#ddd);border-radius:10px}.nv-prev-code{border:2px'
+            . ' dashed var(--line,#ccc);border-radius:8px;padding:10px;text-align:start}.nv-prev-code pre{'
+            . 'white-space:pre-wrap;word-break:break-all;max-height:200px;overflow:auto;font-size:12px}</style>';
     }
 
     /** The extension's small stylesheet (device rules and spacing), with the page nonce. */

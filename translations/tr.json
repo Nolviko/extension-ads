@@ -69,5 +69,14 @@
   "nolviko.ads.hosts_help": "Reklam kodunuzun yüklendiği https://ads.example.com ya da https://*.example.net gibi adresler.",
   "nolviko.ads.field_excluded": "Bu sayfalarda reklam gösterme (adres başlangıçları, her satıra bir tane)",
   "nolviko.ads.excluded_help": "Giriş, kayıt, hesap, özel mesajlar ve yönetim alanında hiçbir zaman reklam gösterilmez (AdSense içeriksiz sayfalarda reklama izin vermez).",
-  "nolviko.ads.hide_help": "Bir grupta reklamları gizlemek için Yönetim > Kullanıcı grupları'nda o gruba \"nolviko.ads.hide\" iznini verin."
+  "nolviko.ads.hide_help": "Bir grupta reklamları gizlemek için Yönetim > Kullanıcı grupları'nda o gruba \"nolviko.ads.hide\" iznini verin.",
+  "nolviko.ads.field_groups": "Gruplar",
+  "nolviko.ads.field_groups_mode": "Gösterilecek gruplar",
+  "nolviko.ads.groups_mode_all": "tüm gruplar",
+  "nolviko.ads.groups_mode_only": "yalnızca işaretli gruplar",
+  "nolviko.ads.groups_mode_except": "işaretli gruplar dışındaki tüm gruplar",
+  "nolviko.ads.groups_help": "Misafirler Misafirler grubundadır. Yukarıdaki kitle ve cihaz ayarları yine geçerlidir; \"Reklamları gizle\" izni olan bir grup hiçbir zaman reklam görmez.",
+  "nolviko.ads.preview": "Önizleme",
+  "nolviko.ads.preview_help": "Reklamın telefonda ve bilgisayarda nasıl göründüğü. Değişikliklerinizi görmek için önce kaydedin.",
+  "nolviko.ads.preview_code": "Reklam kodu yönetim panelinde çalıştırılmaz. Buraya yerleştirilecek kod:"
 }

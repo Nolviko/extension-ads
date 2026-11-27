@@ -6,6 +6,7 @@ namespace NolvikoExt\Ads;
 
 use Closure;
 use Doctrine\DBAL\Connection;
+use Nolviko\Core\Http\CspNonce;
 use Nolviko\Core\Http\ErrorResponder;
 use Nolviko\Core\Http\InstallerPage;
 use Nolviko\Core\Http\RouteHandler;
@@ -52,6 +53,7 @@ final class AdminHandler implements RouteHandler
         private readonly Closure $config,
         private readonly Closure $db,
         private readonly string $clicksTable,
+        private readonly ?CspNonce $nonce = null,
     ) {
     }
 
@@ -122,7 +124,8 @@ final class AdminHandler implements RouteHandler
                     'image' => $field('image'), 'link' => $field('link'), 'alt' => $field('alt'),
                     'title' => $field('title'), 'body' => $field('body'), 'audience' => $field('audience'),
                     'device' => $field('device'), 'start' => $field('start'), 'end' => $field('end'),
-                    'weight' => (int) $field('weight'),
+                    'weight' => (int) $field('weight'), 'groups_mode' => $field('groups_mode'),
+                    'groups' => is_array($input['groups'] ?? null) ? $input['groups'] : [],
                 ]);
                 $found = false;
                 foreach ($data['ads'] as $index => $existing) {
@@ -255,8 +258,40 @@ final class AdminHandler implements RouteHandler
             . $select('device', AdsConfig::DEVICES, $ad['device'], 'device_') . '</p>'
             . $input('start', $ad['start'], 'date') . $input('end', $ad['end'], 'date')
             . $input('weight', (string) $ad['weight'], 'number', ' min="1" max="10"')
+            . $this->groupFields($ad, $select)
             . '<p><button type="submit"' . ($this->admin->isFresh() ? '' : ' disabled') . '>'
-            . $this->e($this->text('save')) . '</button></p></form>';
+            . $this->e($this->text('save')) . '</button></p></form>'
+            . ($new ? '' : $this->previewSection($ad));
+    }
+
+    /** @param array<string, mixed> $ad */
+    private function groupFields(array $ad, Closure $select): string
+    {
+        try {
+            $groups = ($this->db)()->fetchAllAssociative('SELECT id, name FROM usergroups ORDER BY id LIMIT 100');
+        } catch (Throwable) {
+            $groups = [];
+        }
+        $html = '<fieldset class="stack"><legend>' . $this->e($this->text('field_groups')) . '</legend><p>'
+            . '<label for="ad-groups_mode">' . $this->e($this->text('field_groups_mode')) . '</label>'
+            . $select('groups_mode', AdsConfig::GROUP_MODES, $ad['groups_mode'], 'groups_mode_') . '</p><p>';
+        foreach ($groups as $group) {
+            $id = (int) $group['id'];
+            $html .= '<label><input type="checkbox" name="groups[]" value="' . $id . '"'
+                . (in_array($id, $ad['groups'], true) ? ' checked' : '') . '> <bdi>' . $this->e((string) $group['name'])
+                . '</bdi></label> ';
+        }
+
+        return $html . '</p><p class="hint">' . $this->e($this->text('groups_help')) . '</p></fieldset>';
+    }
+
+    /** @param array<string, mixed> $ad */
+    private function previewSection(array $ad): string
+    {
+        return '<section class="panel panel-pad stack"><h2>' . $this->e($this->text('preview')) . '</h2>'
+            . '<p class="meta">' . $this->e($this->text('preview_help')) . '</p>'
+            . AdsRenderer::previewStyle($this->nonce?->value ?? '')
+            . AdsRenderer::preview($ad, $this->text('label'), $this->text('preview_code')) . '</section>';
     }
 
     private function adsTxtTab(): string
